@@ -57,7 +57,7 @@ def is_mirrored(position):
 def mirror_position(position):
 	return [
 		#4 * ((x-1) / 4) + 4 - ((x-1) % 4) if x != 0 else 0
-		5 - x + 8 * ((x-1) / 4)) if x != 0 else 0
+		5 - x + 8 * ((x-1) / 4) if x != 0 else 0
 		for x in position
 	]
 
