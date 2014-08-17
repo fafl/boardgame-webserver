@@ -1,12 +1,17 @@
 import random
+import logging
 
 from flask import Flask
 from flask import g
 
 import helpers
 
+# Set logging to error
+logger = logging.getLogger( 'werkzeug' )
+logger.setLevel(logging.ERROR)
+
 # Path to the DB file
-DATABASE = '/path/to/moves.db'
+DATABASE = 'moves.db'
 
 # How many entries the DB file contains
 ENTRY_COUNT = 1148770438
@@ -18,7 +23,10 @@ app = Flask(__name__)
 
 @app.before_request
 def before_request():
-    g.db = open(DATABASE, 'r')
+    try:
+        g.db = open(DATABASE, 'r')
+    except IOError as e:
+        logger.error( e )
 
 @app.teardown_request
 def teardown_request(exception):
@@ -143,20 +151,23 @@ def play(wbr, wpa, wsc, wst, sbr, spa, ssc, sst, topdown, difficulty, mean):
 # Binary search in the DB file
 # "start" is included, "end" is excluded
 def retrieve_count(position, start, end):
+	logger.info( "retrieving count for %s between %s and %s" % ( position, start, end ) )
+
 	# Recursion anchor
-	if (end <= start):
+	if end <= start:
+		logger.info( "no result" )
 		return None
 
 	# Find the position in the middle
 	middle = (start + end) / 2
 	g.db.seek( middle * ENTRY_SIZE, 0 )
-	bytes = g.db.read(6)
+	bytes = g.db.read( ENTRY_SIZE )
 	found = (
-		ord( bytes[0] ) << 32 +
-		ord( bytes[1] ) << 24 +
-		ord( bytes[2] ) << 16 +
-		ord( bytes[3] ) <<  8 +
-		ord( bytes[4] )
+		( ord( bytes[0] ) << 32 ) +
+		( ord( bytes[1] ) << 24 ) +
+		( ord( bytes[2] ) << 16 ) +
+		( ord( bytes[3] ) <<  8 ) +
+		( ord( bytes[4] ) )
 	)
 
 	# Search in a lower interval
@@ -168,6 +179,7 @@ def retrieve_count(position, start, end):
 		return retrieve_count(position, middle + 1, end)
 
 	# Found it!
+	logger.info( "found result %s" % bytes[5] )
 	return ord( bytes[5] )
 
 if __name__ == "__main__":
