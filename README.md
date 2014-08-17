@@ -6,6 +6,8 @@ Introduction
 
 This flask application plays the boardgame described in the [boardgame-enumeration](../../../boardgame-enumeration) project. It uses its database to return a move for each incoming position request.
 
+An online version is available [here](http://rockpaperscissors.flechtmann.net).
+
 Getting started
 ---------------
 
