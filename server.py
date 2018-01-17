@@ -6,12 +6,13 @@ from flask import g
 
 import helpers
 
-# Set logging to error
-logger = logging.getLogger( 'werkzeug' )
-logger.setLevel(logging.ERROR)
+# Set up logging
+logging.basicConfig(format='%(asctime)-15s %(levelname)s %(message)s')
+logger = logging.getLogger('logger')
+logger.setLevel(logging.INFO)
 
 # Path to the DB file
-DATABASE = 'moves.db'
+DATABASE = '../moves.db'
 
 # How many entries the DB file contains
 ENTRY_COUNT = 1148770438
@@ -146,16 +147,17 @@ def play(wbr, wpa, wsc, wst, sbr, spa, ssc, sst, topdown, difficulty, mean):
 
 	# Pick a random move from the best moves
 	move = random.choice(best_moves)
+	logger.info('Situation is %s, returning move %s' % (str((wbr, wpa, wsc, wst, sbr, spa, ssc, sst, topdown, difficulty, mean)), move))
 	return "%s %s" % (move if topdown == 0 else helpers.mirror_move(move), movelist[move])
 
 # Binary search in the DB file
 # "start" is included, "end" is excluded
 def retrieve_count(position, start, end):
-	logger.info( "retrieving count for %s between %s and %s" % ( position, start, end ) )
+	logger.debug( "retrieving count for %s between %s and %s" % ( position, start, end ) )
 
 	# Recursion anchor
 	if end <= start:
-		logger.info( "no result" )
+		logger.debug( "no result" )
 		return None
 
 	# Find the position in the middle
@@ -179,8 +181,9 @@ def retrieve_count(position, start, end):
 		return retrieve_count(position, middle + 1, end)
 
 	# Found it!
-	logger.info( "found result %s" % bytes[5] )
+	logger.debug( "found result %s" % bytes[5] )
 	return ord( bytes[5] )
 
 if __name__ == "__main__":
+	logger.info("Server starting")
 	app.run(host="0.0.0.0", port=8000)
